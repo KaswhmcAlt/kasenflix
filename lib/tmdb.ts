@@ -204,10 +204,31 @@ export async function getMovieDetails(movieId: number) {
 }
 
 export async function getTVDetails(tvId: number) {
-  const data = await fetchTMDB<TMDBTVShow & { videos: { results: { key: string; type: string; site: string }[] } }>(
+  const data = await fetchTMDB<TMDBTVShow & { 
+    videos: { results: { key: string; type: string; site: string }[] };
+    number_of_seasons: number;
+    seasons: { season_number: number; episode_count: number; name: string }[];
+  }>(
     `/tv/${tvId}`,
     { append_to_response: "videos" }
   );
+  return data;
+}
+
+// Get season details with episode thumbnails
+export async function getTVSeasonDetails(tvId: number, seasonNumber: number) {
+  const data = await fetchTMDB<{
+    id: number;
+    name: string;
+    episodes: {
+      id: number;
+      episode_number: number;
+      name: string;
+      overview: string;
+      still_path: string | null;
+      runtime: number | null;
+    }[];
+  }>(`/tv/${tvId}/season/${seasonNumber}`);
   return data;
 }
 

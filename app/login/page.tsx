@@ -12,7 +12,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const { login } = useApp();
+  const { login, loginWithGoogle, loginWithApple } = useApp();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -109,10 +109,9 @@ export default function LoginPage() {
               type="button"
               variant="outline"
               className="h-12 bg-secondary border-0 hover:bg-secondary/80"
-              onClick={() => {
-                // Mock Google login
-                login("google@user.com", "google");
-                router.push("/profiles");
+              onClick={async () => {
+                const success = await loginWithGoogle();
+                if (success) router.push("/profiles");
               }}
             >
               <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24">
@@ -139,10 +138,9 @@ export default function LoginPage() {
               type="button"
               variant="outline"
               className="h-12 bg-secondary border-0 hover:bg-secondary/80"
-              onClick={() => {
-                // Mock Apple login
-                login("apple@user.com", "apple");
-                router.push("/profiles");
+              onClick={async () => {
+                const success = await loginWithApple();
+                if (success) router.push("/profiles");
               }}
             >
               <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24" fill="currentColor">

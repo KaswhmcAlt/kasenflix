@@ -15,6 +15,7 @@ export interface ContinueWatchingItem {
   mediaType: "movie" | "tv";
   title: string;
   posterUrl: string | null;
+  backdropUrl?: string | null;
   progress: number; // 0-100
   season?: number;
   episode?: number;

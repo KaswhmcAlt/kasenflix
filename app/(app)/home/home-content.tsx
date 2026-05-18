@@ -17,7 +17,18 @@ interface HomeContentProps {
 }
 
 export function HomeContent({ data }: HomeContentProps) {
-  const { currentProfile, continueWatching } = useApp();
+  const { currentProfile, continueWatching, playMedia } = useApp();
+
+  const handlePlayHero = () => {
+    if (data.heroMedia) {
+      playMedia({
+        id: data.heroMedia.id,
+        title: data.heroMedia.title,
+        media_type: data.heroMedia.mediaType,
+        first_air_date: data.heroMedia.mediaType === "tv" ? "tv" : undefined,
+      });
+    }
+  };
 
   return (
     <div className="space-y-8">
@@ -25,9 +36,7 @@ export function HomeContent({ data }: HomeContentProps) {
       {data.heroMedia && (
         <HeroSection
           media={data.heroMedia}
-          onWatch={() => {
-            // TODO: Navigate to watch page
-          }}
+          onWatch={handlePlayHero}
           onDetails={() => {
             // TODO: Open details modal
           }}

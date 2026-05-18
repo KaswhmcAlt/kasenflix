@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Bookmark } from "lucide-react";
+import { Bookmark, Play } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useApp } from "@/lib/context";
 import type { NormalizedMedia } from "@/lib/tmdb";
@@ -20,7 +20,7 @@ function getRatingColor(rating: number): string {
 }
 
 export function MediaCard({ media, showRank, size = "md", onClick }: MediaCardProps) {
-  const { addToWatchlist, removeFromWatchlist, isInWatchlist } = useApp();
+  const { addToWatchlist, removeFromWatchlist, isInWatchlist, playMedia } = useApp();
   const inWatchlist = isInWatchlist(media.id, media.mediaType);
 
   const sizeClasses = {
@@ -42,6 +42,16 @@ export function MediaCard({ media, showRank, size = "md", onClick }: MediaCardPr
     } else {
       addToWatchlist(media.id, media.mediaType);
     }
+  };
+
+  const handlePlay = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    playMedia({
+      id: media.id,
+      title: media.title,
+      media_type: media.mediaType,
+      first_air_date: media.mediaType === "tv" ? "tv" : undefined,
+    });
   };
 
   return (
@@ -84,6 +94,17 @@ export function MediaCard({ media, showRank, size = "md", onClick }: MediaCardPr
 
         {/* Overlay gradient */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+
+        {/* Play button (centered on hover) */}
+        <button
+          onClick={handlePlay}
+          className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10"
+          aria-label="Play"
+        >
+          <div className="rounded-full bg-primary p-3 shadow-lg hover:scale-110 transition-transform">
+            <Play className="h-6 w-6 text-white fill-white" />
+          </div>
+        </button>
 
         {/* Bookmark button */}
         <button

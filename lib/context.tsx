@@ -25,6 +25,21 @@ const MOCK_CONTINUE_WATCHING: ContinueWatchingItem[] = [
   },
 ];
 
+// Video player state
+export interface VideoPlayerState {
+  activeMedia: {
+    id: number;
+    title?: string;
+    name?: string;
+    media_type?: string;
+    first_air_date?: string;
+  } | null;
+  activeServer: number;
+  activeSeason: number;
+  activeEpisode: number;
+  iframeKey: number;
+}
+
 interface AppContextType {
   // Profile
   profiles: Profile[];
@@ -45,6 +60,11 @@ interface AppContextType {
 
   // Continue Watching
   continueWatching: ContinueWatchingItem[];
+
+  // Video Player
+  videoPlayerState: VideoPlayerState;
+  setVideoPlayerState: (updates: Partial<VideoPlayerState>) => void;
+  playMedia: (media: VideoPlayerState["activeMedia"]) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -55,6 +75,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
   const [continueWatching] = useState<ContinueWatchingItem[]>(MOCK_CONTINUE_WATCHING);
+  const [videoPlayerState, setVideoPlayerStateInternal] = useState<VideoPlayerState>({
+    activeMedia: null,
+    activeServer: 1,
+    activeSeason: 1,
+    activeEpisode: 1,
+    iframeKey: Date.now(),
+  });
 
   // Load state from localStorage on mount
   useEffect(() => {
@@ -131,6 +158,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return watchlist.some((item) => item.mediaId === mediaId && item.mediaType === mediaType);
   };
 
+  const setVideoPlayerState = (updates: Partial<VideoPlayerState>) => {
+    setVideoPlayerStateInternal((prev) => ({ ...prev, ...updates }));
+  };
+
+  const playMedia = (media: VideoPlayerState["activeMedia"]) => {
+    setVideoPlayerStateInternal({
+      activeMedia: media,
+      activeServer: 1,
+      activeSeason: 1,
+      activeEpisode: 1,
+      iframeKey: Date.now(),
+    });
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -146,6 +187,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         removeFromWatchlist,
         isInWatchlist,
         continueWatching,
+        videoPlayerState,
+        setVideoPlayerState,
+        playMedia,
       }}
     >
       {children}

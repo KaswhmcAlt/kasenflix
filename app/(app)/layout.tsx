@@ -4,11 +4,12 @@ import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SearchBar } from "@/components/search-bar";
+import { VideoModalPlayer } from "@/components/video-modal-player";
 import { useApp } from "@/lib/context";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, currentProfile } = useApp();
+  const { isAuthenticated, currentProfile, videoPlayerState, setVideoPlayerState } = useApp();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -52,6 +53,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           {children}
         </main>
       </div>
+
+      {/* Video Modal Player */}
+      <VideoModalPlayer state={videoPlayerState} setState={setVideoPlayerState} />
     </div>
   );
 }

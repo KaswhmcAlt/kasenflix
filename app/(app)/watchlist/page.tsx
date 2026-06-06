@@ -8,7 +8,7 @@ import { useApp } from "@/lib/context";
 import type { NormalizedMedia } from "@/lib/tmdb";
 
 export default function WatchlistPage() {
-  const { watchlist, removeFromWatchlist, currentProfile } = useApp();
+  const { watchlist, removeFromWatchlist } = useApp();
   const [mediaItems, setMediaItems] = useState<NormalizedMedia[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -59,7 +59,7 @@ export default function WatchlistPage() {
         <div>
           <h1 className="text-3xl font-bold text-foreground">My Watchlist</h1>
           <p className="text-muted-foreground mt-1">
-            {currentProfile?.name}&apos;s saved titles ({watchlist.length} items)
+            Your saved titles ({watchlist.length} items)
           </p>
         </div>
 

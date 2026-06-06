@@ -1,8 +1,10 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Play } from "lucide-react";
 import type { ContinueWatchingItem } from "@/lib/types";
+import { getImageUrl } from "@/lib/tmdb";
 
 interface ContinueWatchingCardProps {
   item: ContinueWatchingItem;
@@ -10,6 +12,28 @@ interface ContinueWatchingCardProps {
 }
 
 export function ContinueWatchingCard({ item, onClick }: ContinueWatchingCardProps) {
+  const [backdropUrl, setBackdropUrl] = useState<string | null>(item.backdropUrl || null);
+
+  // Fetch backdrop if not available
+  useEffect(() => {
+    if (!backdropUrl && item.mediaId) {
+      const endpoint = item.mediaType === "tv" 
+        ? `https://api.themoviedb.org/3/tv/${item.mediaId}?api_key=70c6183515ac89cbab2dbdea3a6c6124`
+        : `https://api.themoviedb.org/3/movie/${item.mediaId}?api_key=70c6183515ac89cbab2dbdea3a6c6124`;
+      
+      fetch(endpoint)
+        .then(res => res.json())
+        .then(data => {
+          if (data.backdrop_path) {
+            setBackdropUrl(getImageUrl(data.backdrop_path, "w780"));
+          } else if (data.poster_path) {
+            setBackdropUrl(getImageUrl(data.poster_path, "w500"));
+          }
+        })
+        .catch(console.error);
+    }
+  }, [backdropUrl, item.mediaId, item.mediaType]);
+
   return (
     <div
       className="group relative w-[300px] flex-shrink-0 cursor-pointer overflow-hidden rounded-lg bg-card"
@@ -17,16 +41,16 @@ export function ContinueWatchingCard({ item, onClick }: ContinueWatchingCardProp
     >
       {/* Thumbnail */}
       <div className="relative aspect-video">
-        {item.posterUrl ? (
+        {backdropUrl ? (
           <Image
-            src={item.posterUrl}
+            src={backdropUrl}
             alt={item.title}
             fill
             className="object-cover"
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-muted">
-            <span className="text-muted-foreground">No Preview</span>
+            <span className="text-muted-foreground">Loading...</span>
           </div>
         )}
 

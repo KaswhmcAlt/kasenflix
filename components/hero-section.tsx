@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Play, Info } from "lucide-react";
+import { Play, Info, Youtube } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { NormalizedMedia } from "@/lib/tmdb";
 
@@ -9,9 +9,10 @@ interface HeroSectionProps {
   media: NormalizedMedia;
   onWatch?: () => void;
   onDetails?: () => void;
+  onTrailer?: () => void;
 }
 
-export function HeroSection({ media, onWatch, onDetails }: HeroSectionProps) {
+export function HeroSection({ media, onWatch, onDetails, onTrailer }: HeroSectionProps) {
   return (
     <section className="relative h-[500px] w-full overflow-hidden rounded-lg">
       {/* Background image */}
@@ -58,6 +59,17 @@ export function HeroSection({ media, onWatch, onDetails }: HeroSectionProps) {
             <Play className="h-5 w-5 fill-current" />
             Watch Now
           </Button>
+          {onTrailer && (
+            <Button
+              size="lg"
+              variant="outline"
+              className="gap-2 border-white/30 bg-white/10 text-white hover:bg-white/20 hover:text-white"
+              onClick={onTrailer}
+            >
+              <Youtube className="h-5 w-5" />
+              Watch Trailer
+            </Button>
+          )}
           <Button
             size="lg"
             variant="outline"

@@ -1,58 +1,32 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter, usePathname } from "next/navigation";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SearchBar } from "@/components/search-bar";
 import { VideoModalPlayer } from "@/components/video-modal-player";
+import { MediaDetailsModal } from "@/components/media-details-modal";
 import { useApp } from "@/lib/context";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, currentProfile, videoPlayerState, setVideoPlayerState } = useApp();
-  const router = useRouter();
-  const pathname = usePathname();
-
-  useEffect(() => {
-    // Redirect to login if not authenticated
-    if (!isAuthenticated && !pathname.startsWith("/login")) {
-      router.push("/login");
-    }
-    // Redirect to profile selection if authenticated but no profile selected
-    else if (isAuthenticated && !currentProfile && !pathname.startsWith("/profiles")) {
-      router.push("/profiles");
-    }
-  }, [isAuthenticated, currentProfile, router, pathname]);
-
-  // Don't show app shell on login or profile pages
-  if (!isAuthenticated || !currentProfile) {
-    return <>{children}</>;
-  }
+  const { videoPlayerState, setVideoPlayerState } = useApp();
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex min-h-screen flex-col bg-background lg:flex-row">
       <AppSidebar />
-      
-      <div className="flex-1 ml-[240px]">
+
+      <div className="flex-1 lg:ml-[240px]">
         {/* Header */}
-        <header className="sticky top-0 z-30 flex items-center justify-between gap-4 bg-background/80 backdrop-blur-sm px-8 py-4">
+        <header className="sticky top-0 z-30 flex items-center gap-3 bg-background/80 backdrop-blur-sm px-4 py-3 pl-16 lg:px-8 lg:py-4 lg:pl-8">
           <SearchBar className="flex-1 max-w-lg" />
-          
-          <div className="flex items-center gap-3">
-            <Avatar className="h-8 w-8 cursor-pointer">
-              <AvatarImage src={currentProfile.avatarUrl} alt={currentProfile.name} />
-              <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                {currentProfile.name.charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-          </div>
         </header>
 
         {/* Main content */}
-        <main className="px-8 pb-8">
+        <main className="px-4 pb-24 lg:px-8 lg:pb-8">
           {children}
         </main>
       </div>
+
+      {/* Details Modal */}
+      <MediaDetailsModal />
 
       {/* Video Modal Player */}
       <VideoModalPlayer state={videoPlayerState} setState={setVideoPlayerState} />

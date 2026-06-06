@@ -20,8 +20,16 @@ function getRatingColor(rating: number): string {
 }
 
 export function MediaCard({ media, showRank, size = "md", onClick }: MediaCardProps) {
-  const { addToWatchlist, removeFromWatchlist, isInWatchlist, playMedia } = useApp();
+  const { addToWatchlist, removeFromWatchlist, isInWatchlist, playMedia, openDetails } = useApp();
   const inWatchlist = isInWatchlist(media.id, media.mediaType);
+
+  const handleCardClick = () => {
+    if (onClick) {
+      onClick();
+    } else {
+      openDetails({ id: media.id, mediaType: media.mediaType });
+    }
+  };
 
   const sizeClasses = {
     sm: "w-[140px]",
@@ -60,7 +68,7 @@ export function MediaCard({ media, showRank, size = "md", onClick }: MediaCardPr
         "group relative flex-shrink-0 cursor-pointer transition-transform duration-300 hover:scale-105",
         sizeClasses[size]
       )}
-      onClick={onClick}
+      onClick={handleCardClick}
     >
       {/* Rank number for Top 10 */}
       {showRank && (

@@ -3,6 +3,7 @@
 import { AppSidebar } from "@/components/app-sidebar";
 import { SearchBar } from "@/components/search-bar";
 import { VideoModalPlayer } from "@/components/video-modal-player";
+import { MediaDetailsModal } from "@/components/media-details-modal";
 import { useApp } from "@/lib/context";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -23,6 +24,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           {children}
         </main>
       </div>
+
+      {/* Details Modal */}
+      <MediaDetailsModal />
 
       {/* Video Modal Player */}
       <VideoModalPlayer state={videoPlayerState} setState={setVideoPlayerState} />

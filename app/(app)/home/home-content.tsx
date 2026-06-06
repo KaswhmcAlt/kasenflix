@@ -20,7 +20,7 @@ interface HomeContentProps {
 }
 
 export function HomeContent({ data }: HomeContentProps) {
-  const { currentProfile, continueWatching, playMedia } = useApp();
+  const { continueWatching, playMedia } = useApp();
   const [trailerKey, setTrailerKey] = useState<string | null>(null);
   const [trailerTitle, setTrailerTitle] = useState("");
 
@@ -88,7 +88,7 @@ export function HomeContent({ data }: HomeContentProps) {
       {continueWatching.length > 0 && (
         <section className="py-4">
           <h2 className="mb-4 text-xl font-bold text-foreground">
-            Continue Watching ({currentProfile?.name})
+            Continue Watching
           </h2>
           <div className="flex gap-4 overflow-x-auto pb-4 hide-scrollbar">
             {continueWatching.map((item) => (

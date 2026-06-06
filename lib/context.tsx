@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
-import type { Profile, WatchlistItem, ContinueWatchingItem } from "./types";
+import type { WatchlistItem, ContinueWatchingItem } from "./types";
 
 // Video player state
 export interface VideoPlayerState {
@@ -20,22 +20,16 @@ export interface VideoPlayerState {
   iframeKey: number;
 }
 
-interface AppContextType {
-  // Profile
-  profiles: Profile[];
-  currentProfile: Profile | null;
-  setCurrentProfile: (profile: Profile | null) => void;
-  addProfile: (name: string) => void;
-  removeProfile: (profileId: string) => void;
-  isManagingProfiles: boolean;
-  setIsManagingProfiles: (value: boolean) => void;
+export interface DetailsTarget {
+  id: number;
+  mediaType: "movie" | "tv";
+}
 
-  // Auth
-  isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
-  loginWithGoogle: () => Promise<boolean>;
-  loginWithApple: () => Promise<boolean>;
-  logout: () => void;
+interface AppContextType {
+  // Details modal
+  detailsTarget: DetailsTarget | null;
+  openDetails: (target: DetailsTarget) => void;
+  closeDetails: () => void;
 
   // Watchlist
   watchlist: WatchlistItem[];
@@ -51,16 +45,13 @@ interface AppContextType {
   // Video Player
   videoPlayerState: VideoPlayerState;
   setVideoPlayerState: (updates: Partial<VideoPlayerState>) => void;
-  playMedia: (media: VideoPlayerState["activeMedia"]) => void;
+  playMedia: (media: VideoPlayerState["activeMedia"], options?: { season?: number; episode?: number }) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [profiles, setProfiles] = useState<Profile[]>([]);
-  const [currentProfile, setCurrentProfile] = useState<Profile | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isManagingProfiles, setIsManagingProfiles] = useState(false);
+  const [detailsTarget, setDetailsTarget] = useState<DetailsTarget | null>(null);
   const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
   const [continueWatching, setContinueWatching] = useState<ContinueWatchingItem[]>([]);
   const [videoPlayerState, setVideoPlayerStateInternal] = useState<VideoPlayerState>({
@@ -73,21 +64,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   // Load state from localStorage on mount
   useEffect(() => {
-    const savedAuth = localStorage.getItem("kasenflix_auth");
-    const savedProfile = localStorage.getItem("kasenflix_profile");
-    const savedProfiles = localStorage.getItem("kasenflix_profiles");
     const savedWatchlist = localStorage.getItem("kasenflix_watchlist");
     const savedContinueWatching = localStorage.getItem("kasenflix_continue_watching");
 
-    if (savedAuth === "true") {
-      setIsAuthenticated(true);
-    }
-    if (savedProfiles) {
-      setProfiles(JSON.parse(savedProfiles));
-    }
-    if (savedProfile) {
-      setCurrentProfile(JSON.parse(savedProfile));
-    }
     if (savedWatchlist) {
       setWatchlist(JSON.parse(savedWatchlist));
     }
@@ -95,11 +74,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setContinueWatching(JSON.parse(savedContinueWatching));
     }
   }, []);
-
-  // Save profiles to localStorage
-  useEffect(() => {
-    localStorage.setItem("kasenflix_profiles", JSON.stringify(profiles));
-  }, [profiles]);
 
   // Save watchlist to localStorage
   useEffect(() => {
@@ -111,60 +85,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("kasenflix_continue_watching", JSON.stringify(continueWatching));
   }, [continueWatching]);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
-    // Mock authentication - accept any non-empty credentials
-    if (email && password) {
-      setIsAuthenticated(true);
-      localStorage.setItem("kasenflix_auth", "true");
-      return true;
-    }
-    return false;
-  };
-
-  const loginWithGoogle = async (): Promise<boolean> => {
-    // Mock Google login - would require Firebase configuration
-    alert("Google Sign-In requires Firebase configuration. For now, please use email/password login.");
-    return false;
-  };
-
-  const loginWithApple = async (): Promise<boolean> => {
-    // Mock Apple login - would require Firebase configuration
-    alert("Apple Sign-In requires Firebase configuration. For now, please use email/password login.");
-    return false;
-  };
-
-  const logout = () => {
-    setIsAuthenticated(false);
-    setCurrentProfile(null);
-    localStorage.removeItem("kasenflix_auth");
-    localStorage.removeItem("kasenflix_profile");
-  };
-
-  const handleSetCurrentProfile = (profile: Profile | null) => {
-    setCurrentProfile(profile);
-    if (profile) {
-      localStorage.setItem("kasenflix_profile", JSON.stringify(profile));
-    } else {
-      localStorage.removeItem("kasenflix_profile");
-    }
-  };
-
-  const addProfile = (name: string) => {
-    const newProfile: Profile = {
-      id: Date.now().toString(),
-      name,
-      avatarUrl: `https://api.dicebear.com/7.x/personas/svg?seed=${encodeURIComponent(name)}&backgroundColor=7c3aed`,
-    };
-    setProfiles((prev) => [...prev, newProfile]);
-  };
-
-  const removeProfile = (profileId: string) => {
-    setProfiles((prev) => prev.filter((p) => p.id !== profileId));
-    if (currentProfile?.id === profileId) {
-      setCurrentProfile(null);
-      localStorage.removeItem("kasenflix_profile");
-    }
-  };
+  const openDetails = (target: DetailsTarget) => setDetailsTarget(target);
+  const closeDetails = () => setDetailsTarget(null);
 
   const addToWatchlist = (mediaId: number, mediaType: "movie" | "tv") => {
     if (!isInWatchlist(mediaId, mediaType)) {
@@ -216,9 +138,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setVideoPlayerStateInternal((prev) => ({ ...prev, ...updates }));
   };
 
-  const playMedia = (media: VideoPlayerState["activeMedia"]) => {
+  const playMedia = (
+    media: VideoPlayerState["activeMedia"],
+    options?: { season?: number; episode?: number }
+  ) => {
     if (!media) return;
-    
+
+    const season = options?.season ?? 1;
+    const episode = options?.episode ?? 1;
+
     // Add to continue watching when playing
     const isTv = media.media_type === "tv" || media.first_air_date !== undefined;
     addToContinueWatching({
@@ -228,15 +156,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
       posterUrl: null, // Will be fetched separately
       backdropUrl: null,
       progress: 5, // Start at 5%
-      season: isTv ? 1 : undefined,
-      episode: isTv ? 1 : undefined,
+      season: isTv ? season : undefined,
+      episode: isTv ? episode : undefined,
     });
 
     setVideoPlayerStateInternal({
       activeMedia: media,
       activeServer: 1,
-      activeSeason: 1,
-      activeEpisode: 1,
+      activeSeason: season,
+      activeEpisode: episode,
       iframeKey: Date.now(),
     });
   };
@@ -244,18 +172,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   return (
     <AppContext.Provider
       value={{
-        profiles,
-        currentProfile,
-        setCurrentProfile: handleSetCurrentProfile,
-        addProfile,
-        removeProfile,
-        isManagingProfiles,
-        setIsManagingProfiles,
-        isAuthenticated,
-        login,
-        loginWithGoogle,
-        loginWithApple,
-        logout,
+        detailsTarget,
+        openDetails,
+        closeDetails,
         watchlist,
         addToWatchlist,
         removeFromWatchlist,
